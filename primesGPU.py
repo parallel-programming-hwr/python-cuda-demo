@@ -33,10 +33,10 @@ check_prime(unsigned long long *input, bool *output)
 """)
 
 ker2 = SourceModule("""
-__global__ void check_prime2(const unsigned long *IN, bool *OUT) {
+__global__ void check_prime2(const unsigned long long *IN, bool *OUT) {
     int id = threadIdx.x + blockDim.x * blockIdx.x;
-    unsigned long num = IN[id];
-    unsigned long limit = (unsigned long) sqrt((double) num) + 1;
+    unsigned long long num = IN[id];
+    unsigned long long limit = (unsigned long long) sqrt((double) num) + 1;
 
     if (num == 2 || num == 3) {
         OUT[id] = true;
@@ -45,7 +45,7 @@ __global__ void check_prime2(const unsigned long *IN, bool *OUT) {
         return;
     }
     if (limit < 9) {
-        for (unsigned long i = 3; i <= limit; i++) {
+        for (unsigned long long i = 3; i <= limit; i++) {
             if (num % i == 0) {
                 return;
             }
@@ -54,7 +54,7 @@ __global__ void check_prime2(const unsigned long *IN, bool *OUT) {
         if (num > 3 && num % 3 == 0) {
             return;
         }
-        for (unsigned long i = 9; i <= (limit + 6); i += 6) {
+        for (unsigned long long i = 9; i <= (limit + 6); i += 6) {
             if (num % (i - 2) == 0 || num % (i - 4) == 0) {
                 return;
             }
@@ -76,26 +76,32 @@ def calc_primes(start: int = 1, grid_size: int = 1000, block_size: int = 1024):
     if start % 2 == 0:
         start = start + 1
 
-    testvec = np.arange(start, block_size * grid_size * 2 + start, step=2).astype(np.uint)
+    startEvent = drv.Event()
+    endEvent = drv.Event()
+
+    testvec = np.arange(start, block_size * grid_size * 2 + start, step=2).astype(np.ulonglong)
 
     testvec_gpu = gpuarray.to_gpu(testvec)
     outvec_gpu = gpuarray.to_gpu(np.full(block_size * grid_size, False, dtype=bool))
-    t1 = time()
+    startEvent.record()
     check_prime(testvec_gpu, outvec_gpu, block=(block_size, 1, 1), grid=(grid_size, 1, 1))
+    endEvent.record()
+    endEvent.synchronize()
+    kernel_execution_time = startEvent.time_till(endEvent)
+
     result = outvec_gpu.get()
-    t2 = time()
 
     for idx, val in enumerate(result):
         if val:
             primes.append(testvec[idx])
 
-    print(len(primes))
-    print('checked ' + str(block_size * grid_size) + ' numbers')
+    print('checked ' + str(block_size * grid_size) + ' numbers' + ' (' + str(start) + ' - ' + str(
+        start + block_size * grid_size) + ')')
     print('last prime: ' + str(primes[-1]))
-    print('The GPU needed ' + str(t2 - t1) + ' seconds')
+    print('The GPU needed ' + str(kernel_execution_time) + ' milliseconds')
 
     with open(options.timings_output, 'a') as file:
-        file.write(str(start) + "," + str((t2 - t1) * 1000) + "\n")
+        file.write(str(start) + "," + str(kernel_execution_time) + "\n")
 
     return primes
 
@@ -103,7 +109,7 @@ def calc_primes(start: int = 1, grid_size: int = 1000, block_size: int = 1024):
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-e", "--end", dest="end",
-                      help="numbers to check without even numbers", default="1000000000", type="int")
+                      help="numbers to check without even numbers", default="5000000000", type="int")
     parser.add_option("--numbers-per-step", dest="numbers_per_step",
                       help="amount of uneven numbers checked in each step (even number are skipped)", default="8388608",
                       type="int")
@@ -122,9 +128,11 @@ if __name__ == "__main__":
 
     with open(options.timings_output, 'w') as file:
         file.write("offset, duration\n")
+    with open(options.output, 'w') as file:
+        file.write("")
 
     while last_number_checked < options.end:
         calculated_primes = calc_primes(last_number_checked + 1, grid_size, block_size)
-        with open(options.output, 'w') as file:
+        with open(options.output, 'a') as file:
             file.write("\n".join([str(p) for p in calculated_primes]))
         last_number_checked = last_number_checked + resulting_numbers_per_step * 2
