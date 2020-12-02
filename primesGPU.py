@@ -33,10 +33,10 @@ check_prime(unsigned long long *input, bool *output)
 """)
 
 ker2 = SourceModule("""
-__global__ void check_prime2(const unsigned long long *IN, bool *OUT) {
+__global__ void check_prime2(const unsigned __int64 *IN, bool *OUT) {
     int id = threadIdx.x + blockDim.x * blockIdx.x;
-    unsigned long long num = IN[id];
-    unsigned long long limit = (unsigned long long) sqrt((double) num) + 1;
+    unsigned __int64 num = IN[id];
+    unsigned __int64 limit = (unsigned __int64) sqrt((double) num) + 1;
 
     if (num == 2 || num == 3) {
         OUT[id] = true;
@@ -45,7 +45,7 @@ __global__ void check_prime2(const unsigned long long *IN, bool *OUT) {
         return;
     }
     if (limit < 9) {
-        for (unsigned long long i = 3; i <= limit; i++) {
+        for (unsigned __int64 i = 3; i <= limit; i++) {
             if (num % i == 0) {
                 return;
             }
@@ -54,7 +54,7 @@ __global__ void check_prime2(const unsigned long long *IN, bool *OUT) {
         if (num > 3 && num % 3 == 0) {
             return;
         }
-        for (unsigned long long i = 9; i <= (limit + 6); i += 6) {
+        for (unsigned __int64 i = 9; i <= (limit + 6); i += 6) {
             if (num % (i - 2) == 0 || num % (i - 4) == 0) {
                 return;
             }
@@ -79,7 +79,7 @@ def calc_primes(start: int = 1, grid_size: int = 1000, block_size: int = 1024):
     startEvent = drv.Event()
     endEvent = drv.Event()
 
-    testvec = np.arange(start, block_size * grid_size * 2 + start, step=2).astype(np.ulonglong)
+    testvec = np.arange(start, block_size * grid_size * 2 + start, step=2).astype(np.uint64)
 
     testvec_gpu = gpuarray.to_gpu(testvec)
     outvec_gpu = gpuarray.to_gpu(np.full(block_size * grid_size, False, dtype=bool))
