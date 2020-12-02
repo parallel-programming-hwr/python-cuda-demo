@@ -101,7 +101,7 @@ def calc_primes(start: int = 1, grid_size: int = 1000, block_size: int = 1024):
     print('The GPU needed ' + str(kernel_execution_time) + ' milliseconds')
 
     with open(options.timings_output, 'a') as file:
-        file.write(str(start) + "," + str(kernel_execution_time) + "\n")
+        file.write(str(start) + "," + str(kernel_execution_time) + "," + str((block_size * grid_size)/(kernel_execution_time/1000)) + "\n")
 
     return primes
 
@@ -111,13 +111,15 @@ if __name__ == "__main__":
     parser.add_option("-e", "--end", dest="end",
                       help="numbers to check without even numbers", default="5000000000", type="int")
     parser.add_option("--numbers-per-step", dest="numbers_per_step",
-                      help="amount of uneven numbers checked in each step (even number are skipped)", default="8388608",
+                      help="amount of uneven numbers checked in each step (even number are skipped)", default="83886080",
                       type="int")
     parser.add_option("--output", dest="output",
                       help="name of the file, where the primes should be stored", default="primes.txt", type="string")
     parser.add_option("--timings-output", dest="timings_output",
                       help="name of the csv file, where the timing is logged as csv", default="timings.csv",
                       type="string")
+    parser.add_option("--save-primes", dest="save_primes",
+                      help="whether the calculated primes should be saved in a txt file", default=False)
     (options, args) = parser.parse_args()
 
     block_size = 1024
@@ -127,12 +129,14 @@ if __name__ == "__main__":
     last_number_checked = start - 1
 
     with open(options.timings_output, 'w') as file:
-        file.write("offset, duration\n")
-    with open(options.output, 'w') as file:
-        file.write("")
+        file.write("offset,duration,numbers_per_second\n")
+    if options.save_primes:
+        with open(options.output, 'w') as file:
+            file.write("")
 
     while last_number_checked < options.end:
         calculated_primes = calc_primes(last_number_checked + 1, grid_size, block_size)
-        with open(options.output, 'a') as file:
-            file.write("\n".join([str(p) for p in calculated_primes]))
+        if options.save_primes:
+            with open(options.output, 'a') as file:
+                file.write("\n".join([str(p) for p in calculated_primes]))
         last_number_checked = last_number_checked + resulting_numbers_per_step * 2
