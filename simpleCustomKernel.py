@@ -10,15 +10,14 @@ __global__ void scalar_multiply_kernel(float *outvec, float scalar, float *vec)
      int i = threadIdx.x;
      outvec[i] = scalar*vec[i];
 }
-""")
+""")  # compile kernel function
 
-scalar_multiply_gpu = ker.get_function("scalar_multiply_kernel")
+scalar_multiply_gpu = ker.get_function("scalar_multiply_kernel")  # get kernel function reference
 
-testvec = np.random.randn(512).astype(np.float32)
-testvec_gpu = gpuarray.to_gpu(testvec)
-outvec_gpu = gpuarray.empty_like(testvec_gpu)
+host_vector = np.random.randn(512).astype(np.float32)  # create array of 512 random numbers
+device_vector = gpuarray.to_gpu(host_vector)  # copy into GPUs global memory
+out_device_vector = gpuarray.empty_like(device_vector)  # allocate a chunk of empty memory to GPUs global memory
 
-scalar_multiply_gpu(outvec_gpu, np.float32(2), testvec_gpu, block=(512, 1, 1), grid=(1, 1, 1))
-print("Does our kernel work correctly? : {}".format(np.allclose(outvec_gpu.get(), 2 * testvec)))
-print(outvec_gpu.get())
-print(2 * testvec)
+scalar_multiply_gpu(out_device_vector, np.float32(2), device_vector, block=(512, 1, 1), grid=(1, 1, 1))  # launch the kernel
+print("Does our kernel work correctly? : {}".format(np.allclose(out_device_vector.get(), 2 * host_vector)))
+print(out_device_vector.get())

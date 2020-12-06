@@ -111,7 +111,7 @@ if __name__ == "__main__":
     parser.add_option("-e", "--end", dest="end",
                       help="numbers to check without even numbers", default="5000000000", type="int")
     parser.add_option("--numbers-per-step", dest="numbers_per_step",
-                      help="amount of uneven numbers checked in each step (even number are skipped)", default="4194304",
+                      help="amount of uneven numbers checked in each step (even number are skipped)", default="8000000",
                       type="int")
     parser.add_option("--output", dest="output",
                       help="name of the file, where the primes should be stored", default="primes.txt", type="string")
@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
     block_size = 1024
     start = 1
-    grid_size = int(math.ceil(options.numbers_per_step / block_size))  # half of numbers per
+    grid_size = int(math.ceil(options.numbers_per_step / block_size))
     resulting_numbers_per_step = block_size * grid_size
     last_number_checked = start - 1
 
