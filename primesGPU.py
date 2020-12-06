@@ -111,7 +111,7 @@ if __name__ == "__main__":
     parser.add_option("-e", "--end", dest="end",
                       help="numbers to check without even numbers", default="5000000000", type="int")
     parser.add_option("--numbers-per-step", dest="numbers_per_step",
-                      help="amount of uneven numbers checked in each step (even number are skipped)", default="83886080",
+                      help="amount of uneven numbers checked in each step (even number are skipped)", default="4194304",
                       type="int")
     parser.add_option("--output", dest="output",
                       help="name of the file, where the primes should be stored", default="primes.txt", type="string")
