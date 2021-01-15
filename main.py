@@ -109,12 +109,15 @@ def calc_primes(start: int = 1, grid_size: int = 1000, block_size: int = 1024):
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-e", "--end", dest="end",
-                      help="numbers to check without even numbers", default="5000000000", type="int")
+                      help="numbers to check without even numbers", default="50000000", type="int")
     parser.add_option("--numbers-per-step", dest="numbers_per_step",
                       help="amount of uneven numbers checked in each step (even number are skipped)", default="8000000",
                       type="int")
     parser.add_option("--block_size", dest="block_size",
                       help="number of threads per block, max = 1024", default="1024",
+                      type="int")
+    parser.add_option("--grid_size", dest="grid_size",
+                      help="number of blocks in the grid",
                       type="int")
     parser.add_option("--output", dest="output",
                       help="name of the file, where the primes should be stored", default="primes.txt", type="string")
