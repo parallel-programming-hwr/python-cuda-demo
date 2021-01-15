@@ -1,1 +1,1 @@
-helloCuda
+Cuda Benchmark
