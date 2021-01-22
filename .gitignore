@@ -3,4 +3,5 @@
 /workspace.xml
 .idea
 primes.txt
-timings.csv
+*.csv
+*.csv#
