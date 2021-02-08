@@ -111,10 +111,10 @@ if __name__ == "__main__":
     parser.add_option("-e", "--end", dest="end",
                       help="numbers to check without even numbers", default="50000000", type="int")
     parser.add_option("--numbers-per-step", dest="numbers_per_step",
-                      help="amount of uneven numbers checked in each step (even number are skipped)", default="8000000",
+                      help="amount of uneven numbers checked in each step (even number are skipped)", default="12288",
                       type="int")
     parser.add_option("--block_size", dest="block_size",
-                      help="number of threads per block, max = 1024", default="1024",
+                      help="number of threads per block, max = 1024", default="128",
                       type="int")
     parser.add_option("--grid_size", dest="grid_size",
                       help="number of blocks in the grid",
